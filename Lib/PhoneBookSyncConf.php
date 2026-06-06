@@ -173,3 +173,132 @@ class PhoneBookSyncConf extends ConfigClass
         return is_array($result) ? $result : [];
     }
 }
+
+    // ------------------------------------------------------------------
+    // Legacy API callback — gebruikt door /pbxcore/api/modules/{module}/{action}
+    // ------------------------------------------------------------------
+    public function moduleRestAPICallback(array $request): \MikoPBX\PBXCoreREST\Lib\PBXApiResult
+    {
+        $res = new \MikoPBX\PBXCoreREST\Lib\PBXApiResult();
+        $res->processor = __METHOD__;
+
+        $action = strtoupper($request['action'] ?? '');
+        $data   = $request['data'] ?? [];
+        $id     = $data['id'] ?? $request['id'] ?? null;
+
+        switch ($action) {
+            case 'CONTACTS':
+                // GET /pbxcore/api/modules/ModulePhoneBookSync/contacts
+                $res->success = true;
+                $res->data['contacts'] = self::getAllContacts();
+                $res->data['version']  = '1.4.0';
+                break;
+
+            case 'SAVECONTACT':
+                // POST /pbxcore/api/modules/ModulePhoneBookSync/saveContact
+                $name   = trim($data['name'] ?? '');
+                $number = trim($data['number'] ?? '');
+                if (!$name)   { $res->success = false; $res->messages[] = 'name_required'; break; }
+                if (!$number) { $res->success = false; $res->messages[] = 'number_required'; break; }
+                $clean = preg_replace('/[\s\-\(\)]/', '', $number);
+                if (!preg_match('/^[\+\d]{6,20}$/', $clean)) {
+                    $res->success = false; $res->messages[] = 'number_invalid'; break;
+                }
+                $exists = \Modules\ModulePhoneBookSync\Models\PhoneBookSyncContact::findFirst([
+                    'conditions' => 'number = :number:', 'bind' => ['number' => $number]
+                ]);
+                if ($exists) { $res->success = false; $res->messages[] = 'duplicate'; break; }
+                $contact = new \Modules\ModulePhoneBookSync\Models\PhoneBookSyncContact();
+                $contact->name       = $name;
+                $contact->number     = $number;
+                $contact->department = trim($data['department'] ?? '');
+                $contact->category   = trim($data['category']   ?? '');
+                $contact->notes      = trim($data['notes']      ?? '');
+                if ($contact->save()) {
+                    self::syncToCallerID();
+                    $res->success = true;
+                    $res->data['id'] = $contact->id;
+                } else {
+                    $res->success = false;
+                    $res->messages = $contact->getMessages();
+                }
+                break;
+
+            case 'UPDATECONTACT':
+                $contact = \Modules\ModulePhoneBookSync\Models\PhoneBookSyncContact::findFirstById($id);
+                if (!$contact) { $res->success = false; $res->messages[] = 'not_found'; break; }
+                if (isset($data['name']))       $contact->name       = trim($data['name']);
+                if (isset($data['number']))     $contact->number     = trim($data['number']);
+                if (isset($data['department'])) $contact->department = trim($data['department']);
+                if (isset($data['category']))   $contact->category   = trim($data['category']);
+                if ($contact->save()) { self::syncToCallerID(); $res->success = true; }
+                else { $res->success = false; $res->messages = $contact->getMessages(); }
+                break;
+
+            case 'DELETECONTACT':
+                $contact = \Modules\ModulePhoneBookSync\Models\PhoneBookSyncContact::findFirstById($id);
+                if (!$contact) { $res->success = false; $res->messages[] = 'not_found'; break; }
+                if ($contact->delete()) { self::syncToCallerID(); $res->success = true; }
+                else { $res->success = false; $res->messages = $contact->getMessages(); }
+                break;
+
+            case 'SYNC-CALLERID':
+            case 'SYNCCALLERID':
+                $res->success = self::syncToCallerID();
+                if (!$res->success) $res->messages[] = 'callerid_sync_fail';
+                break;
+
+            case 'EXPORT-CSV':
+            case 'EXPORTCSV':
+                $res->success = true;
+                $res->data['csv'] = self::exportToCsv();
+                break;
+
+            case 'IMPORT-CSV':
+            case 'IMPORTCSV':
+                $csvData = $data['csv'] ?? '';
+                $result  = self::importFromCsv($csvData);
+                if ($result['imported'] > 0) self::syncToCallerID();
+                $res->success = true;
+                $res->data['imported'] = $result['imported'];
+                $res->data['errors']   = $result['errors'];
+                break;
+
+            default:
+                $res->success  = false;
+                $res->messages = ['Unknown action: ' . $action];
+        }
+        return $res;
+    }
+
+    public static function exportToCsv(): string
+    {
+        $lines = ['name,number,department,category,notes'];
+        $contacts = \Modules\ModulePhoneBookSync\Models\PhoneBookSyncContact::find(['order' => 'name ASC']);
+        foreach ($contacts as $c) {
+            $lines[] = implode(',', array_map(fn($v) => str_contains($v,',') ? '"'.$v.'"' : $v,
+                [$c->name, $c->number, $c->department??'', $c->category??'', $c->notes??'']));
+        }
+        return implode("\n", $lines);
+    }
+
+    public static function importFromCsv(string $csv): array
+    {
+        $lines = array_filter(explode("\n", trim($csv)));
+        $imported = 0; $errors = [];
+        foreach ($lines as $i => $line) {
+            $cols = str_getcsv($line);
+            if ($i === 0 && strtolower($cols[0]??'') === 'name') continue;
+            $name = trim($cols[0]??''); $number = trim($cols[1]??'');
+            if (!$name || !$number) continue;
+            $exists = \Modules\ModulePhoneBookSync\Models\PhoneBookSyncContact::findFirst([
+                'conditions' => 'number = :n:', 'bind' => ['n' => $number]
+            ]);
+            if ($exists) continue;
+            $c = new \Modules\ModulePhoneBookSync\Models\PhoneBookSyncContact();
+            $c->name = $name; $c->number = $number;
+            $c->department = trim($cols[2]??''); $c->category = trim($cols[3]??'');
+            if ($c->save()) $imported++; else $errors[] = "Row $i failed";
+        }
+        return ['imported' => $imported, 'errors' => $errors];
+    }
