@@ -1,33 +1,38 @@
 <?php
 /**
- * Cloud Phonebook v1.1.3 — PbxExtensionSetup
+ * Cloud Phonebook v1.3.3 — PbxExtensionSetup
  */
 namespace Modules\ModulePhoneBookSync\Setup;
 
+use MikoPBX\Modules\PbxExtensionUtils;
 use MikoPBX\Modules\Setup\PbxExtensionSetupBase;
 
 class PbxExtensionSetup extends PbxExtensionSetupBase
 {
     public function installDB(): bool
     {
-        // 1. Maak eigen SQLite tabel aan via model annotations
+        // 1. Maak eigen contacts tabel aan
         $result = $this->createSettingsTableByModelsAnnotations();
         if (!$result) {
             $this->messages[] = 'Failed to create module database tables';
             return false;
         }
 
-        // 2. Registreer module in PbxExtensionModules tabel
+        // 2. Registreer module in PbxExtensionModules
         $result = $this->registerNewModule();
         if (!$result) {
             $this->messages[] = 'Failed to register module';
             return false;
         }
 
-        // 3. Sidebar menu-item toevoegen
+        // 3. Sidebar menu-item
         $this->addToSidebar();
 
-        // 4. source-kolom in pb_PhoneBook (non-destructief, best-effort)
+        // 4. Maak symlinks aan voor JS/CSS/IMG assets en Views
+        PbxExtensionUtils::createAssetsSymlinks($this->moduleUniqueID);
+        PbxExtensionUtils::createViewSymlinks($this->moduleUniqueID);
+
+        // 5. source-kolom in pb_PhoneBook (non-destructief)
         try {
             $db    = \Phalcon\Di\Di::getDefault()->get('db');
             $cols  = $db->fetchAll("PRAGMA table_info(pb_PhoneBook)");
