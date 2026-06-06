@@ -1,13 +1,13 @@
 <?php
 /**
  * Copyright © 2024 YourCompany
- * Module: ModulePhonebookSync v1.0.0
- * REST API Controller — handles all /api/modules/ModulePhonebookSync/* routes
+ * Module: ModulePhoneBookSync v1.0.0
+ * REST API Controller — handles all /api/modules/ModulePhoneBookSync/* routes
  */
-namespace Modules\ModulePhonebookSync\Lib;
+namespace Modules\ModulePhoneBookSync\Lib;
 
 use MikoPBX\PBXCoreREST\Lib\PBXApiResult;
-use Modules\ModulePhonebookSync\Models\PhonebookSyncContact;
+use Modules\ModulePhoneBookSync\Models\PhoneBookSyncContact;
 
 class ApiController
 {
@@ -18,8 +18,8 @@ class ApiController
     {
         $result = new PBXApiResult();
         try {
-            $result->data['contacts'] = ModulePhonebookSyncConf::getAllContacts();
-            $result->data['version']  = ModulePhonebookSyncConf::VERSION;
+            $result->data['contacts'] = ModulePhoneBookSyncConf::getAllContacts();
+            $result->data['version']  = ModulePhoneBookSyncConf::VERSION;
             $result->success = true;
         } catch (\Throwable $e) {
             $result->success  = false;
@@ -55,7 +55,7 @@ class ApiController
         }
 
         // Duplicate check
-        $exists = PhonebookSyncContact::findFirst([
+        $exists = PhoneBookSyncContact::findFirst([
             'conditions' => 'number = :number:',
             'bind'       => ['number' => $number],
         ]);
@@ -65,7 +65,7 @@ class ApiController
             return $result;
         }
 
-        $contact             = new PhonebookSyncContact();
+        $contact             = new PhoneBookSyncContact();
         $contact->name       = $name;
         $contact->number     = $number;
         $contact->department = trim($params['department'] ?? '');
@@ -74,7 +74,7 @@ class ApiController
 
         if ($contact->save()) {
             // Auto-sync CallerID after every change
-            ModulePhonebookSyncConf::syncToCallerID();
+            ModulePhoneBookSyncConf::syncToCallerID();
             $result->success       = true;
             $result->data['id']    = $contact->id;
             $result->data['contact'] = [
@@ -101,7 +101,7 @@ class ApiController
     {
         $result  = new PBXApiResult();
         $id      = (int)($params['id'] ?? 0);
-        $contact = PhonebookSyncContact::findFirstById($id);
+        $contact = PhoneBookSyncContact::findFirstById($id);
 
         if (!$contact) {
             $result->success  = false;
@@ -116,7 +116,7 @@ class ApiController
         if (isset($params['notes']))      $contact->notes      = trim($params['notes']);
 
         if ($contact->save()) {
-            ModulePhonebookSyncConf::syncToCallerID();
+            ModulePhoneBookSyncConf::syncToCallerID();
             $result->success = true;
         } else {
             $result->success  = false;
@@ -132,7 +132,7 @@ class ApiController
     {
         $result  = new PBXApiResult();
         $id      = (int)($params['id'] ?? 0);
-        $contact = PhonebookSyncContact::findFirstById($id);
+        $contact = PhoneBookSyncContact::findFirstById($id);
 
         if (!$contact) {
             $result->success  = false;
@@ -141,7 +141,7 @@ class ApiController
         }
 
         if ($contact->delete()) {
-            ModulePhonebookSyncConf::syncToCallerID();
+            ModulePhoneBookSyncConf::syncToCallerID();
             $result->success = true;
         } else {
             $result->success  = false;
@@ -156,7 +156,7 @@ class ApiController
     public static function syncCallerID(array $params = []): PBXApiResult
     {
         $result          = new PBXApiResult();
-        $result->success = ModulePhonebookSyncConf::syncToCallerID();
+        $result->success = ModulePhoneBookSyncConf::syncToCallerID();
         if (!$result->success) {
             $result->messages = ['callerid_sync_fail'];
         }
@@ -170,7 +170,7 @@ class ApiController
     {
         $result              = new PBXApiResult();
         $result->success     = true;
-        $result->data['csv'] = ModulePhonebookSyncConf::exportToCsv();
+        $result->data['csv'] = ModulePhoneBookSyncConf::exportToCsv();
         return $result;
     }
 
@@ -181,10 +181,10 @@ class ApiController
     {
         $result    = new PBXApiResult();
         $csvData   = $params['csv'] ?? '';
-        $importResult = ModulePhonebookSyncConf::importFromCsv($csvData);
+        $importResult = ModulePhoneBookSyncConf::importFromCsv($csvData);
 
         if ($importResult['imported'] > 0) {
-            ModulePhonebookSyncConf::syncToCallerID();
+            ModulePhoneBookSyncConf::syncToCallerID();
         }
 
         $result->success                = true;
