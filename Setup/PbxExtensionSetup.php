@@ -2,7 +2,7 @@
 /**
  * Cloud Phonebook v1.1.3 — PbxExtensionSetup
  */
-namespace Modules\ModulePhoneBook\Setup;
+namespace Modules\ModulePhonebookSync\Setup;
 
 use MikoPBX\Modules\Setup\PbxExtensionSetupBase;
 
@@ -46,7 +46,7 @@ class PbxExtensionSetup extends PbxExtensionSetupBase
     {
         try {
             $db = \Phalcon\Di\Di::getDefault()->get('db');
-            $db->execute("DELETE FROM pb_PhoneBook WHERE source = 'ModulePhoneBook'");
+            $db->execute("DELETE FROM pb_PhoneBook WHERE source = 'ModulePhonebookSync'");
         } catch (\Throwable $e) {
             // Negeer bij verwijdering
         }
