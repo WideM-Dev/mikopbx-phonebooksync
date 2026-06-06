@@ -20,12 +20,18 @@ class GetController extends ModulesControllerBase
 
         switch ($format) {
             case 'yealink':
-            case 'fanvil':      // Fanvil gebruikt exact hetzelfde formaat als Yealink/Cisco
-            case 'cisco':
-            case 'snom':
+            case 'fanvil':  // Fanvil gebruikt hetzelfde formaat als Yealink
             case 'xml':
                 $this->response->setContentType('application/xml', 'UTF-8');
-                $this->echoCiscoDirectory($contacts);
+                $this->echoYealink($contacts);
+                break;
+            case 'snom':
+                $this->response->setContentType('application/xml', 'UTF-8');
+                $this->echoSnom($contacts);
+                break;
+            case 'cisco':
+                $this->response->setContentType('application/xml', 'UTF-8');
+                $this->echoCisco($contacts);
                 break;
             case 'grandstream':
                 $this->response->setContentType('application/xml', 'UTF-8');
@@ -42,11 +48,10 @@ class GetController extends ModulesControllerBase
     }
 
     /**
-     * Cisco/Yealink/Fanvil/Snom formaat — breed ondersteund
-     * Root: YealinkIPPhoneDirectory
-     * Entries: DirectoryEntry > Name + Telephone
+     * Yealink formaat
+     * <YealinkIPPhoneDirectory> + <DirectoryEntry> + <Telephone>
      */
-    private function echoCiscoDirectory(array $contacts): void
+    private function echoYealink(array $contacts): void
     {
         echo "<?xml version='1.0' encoding='UTF-8'?>" . PHP_EOL;
         echo '<YealinkIPPhoneDirectory>' . PHP_EOL;
@@ -59,6 +64,48 @@ class GetController extends ModulesControllerBase
             echo "\t</DirectoryEntry>" . PHP_EOL;
         }
         echo '</YealinkIPPhoneDirectory>';
+    }
+
+    /**
+     * Snom formaat
+     * <SnomIPPhoneDirectory> + <Title> + <Prompt> + <DirectoryEntry> + <Telephone>
+     */
+    private function echoSnom(array $contacts): void
+    {
+        echo "<?xml version='1.0' encoding='utf-8'?>" . PHP_EOL;
+        echo '<SnomIPPhoneDirectory>' . PHP_EOL;
+        echo "\t<Title>Cloud Phonebook</Title>" . PHP_EOL;
+        echo "\t<Prompt>Select contact</Prompt>" . PHP_EOL;
+        foreach ($contacts as $c) {
+            $name   = htmlspecialchars($c['name']   ?? '', ENT_XML1, 'UTF-8');
+            $number = htmlspecialchars($c['number'] ?? ($c['extension'] ?? ''), ENT_XML1, 'UTF-8');
+            echo "\t<DirectoryEntry>" . PHP_EOL;
+            echo "\t\t<Name>{$name}</Name>" . PHP_EOL;
+            echo "\t\t<Telephone>{$number}</Telephone>" . PHP_EOL;
+            echo "\t</DirectoryEntry>" . PHP_EOL;
+        }
+        echo '</SnomIPPhoneDirectory>';
+    }
+
+    /**
+     * Cisco formaat
+     * <CiscoIPPhoneDirectory> + <Title> + <Prompt> + <DirectoryEntry> + <Telephone>
+     */
+    private function echoCisco(array $contacts): void
+    {
+        echo "<?xml version='1.0' encoding='UTF-8'?>" . PHP_EOL;
+        echo '<CiscoIPPhoneDirectory>' . PHP_EOL;
+        echo "\t<Title>Cloud Phonebook</Title>" . PHP_EOL;
+        echo "\t<Prompt>Select contact</Prompt>" . PHP_EOL;
+        foreach ($contacts as $c) {
+            $name   = htmlspecialchars($c['name']   ?? '', ENT_XML1, 'UTF-8');
+            $number = htmlspecialchars($c['number'] ?? ($c['extension'] ?? ''), ENT_XML1, 'UTF-8');
+            echo "\t<DirectoryEntry>" . PHP_EOL;
+            echo "\t\t<Name>{$name}</Name>" . PHP_EOL;
+            echo "\t\t<Telephone>{$number}</Telephone>" . PHP_EOL;
+            echo "\t</DirectoryEntry>" . PHP_EOL;
+        }
+        echo '</CiscoIPPhoneDirectory>';
     }
 
     /**
