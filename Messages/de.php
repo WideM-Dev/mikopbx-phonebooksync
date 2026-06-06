@@ -1,8 +1,8 @@
 <?php
 // Cloud Phonebook — Deutsch
 return [
-    'BreadcrumbModulePhonebookSync' => 'Cloud Telefonbuch',
-    'SubHeaderModulePhonebookSync'  => 'Einheitliches Telefonbuch mit internen Nebenstellen und externen Kontakten',
+    'BreadcrumbModulePhoneBookSync' => 'Cloud Telefonbuch',
+    'SubHeaderModulePhoneBookSync'  => 'Einheitliches Telefonbuch mit internen Nebenstellen und externen Kontakten',
     'module_name'               => 'Cloud Telefonbuch',
     'module_description'        => 'Einheitliches Telefonbuch mit internen Nebenstellen und externen Kontakten',
     'phonebook_title'           => 'Cloud Telefonbuch',
