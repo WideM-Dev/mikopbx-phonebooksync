@@ -1,8 +1,8 @@
 <?php
 // Cloud Phonebook — Français
 return [
-    'BreadcrumbModulePhoneBook' => 'Cloud Annuaire',
-    'SubHeaderModulePhoneBook'  => 'Annuaire unifié combinant extensions internes et contacts externes',
+    'BreadcrumbModulePhonebookSync' => 'Cloud Annuaire',
+    'SubHeaderModulePhonebookSync'  => 'Annuaire unifié combinant extensions internes et contacts externes',
     'module_name'               => 'Cloud Annuaire',
     'module_description'        => 'Annuaire unifié combinant extensions internes et contacts externes',
     'phonebook_title'           => 'Cloud Annuaire',
