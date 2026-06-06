@@ -1,8 +1,8 @@
 <?php
 // Cloud Phonebook — English (default/base language)
 return [
-    'BreadcrumbModulePhonebookSync' => 'Cloud Phonebook',
-    'SubHeaderModulePhonebookSync'  => 'Unified phonebook with internal extensions and external contacts',
+    'BreadcrumbModulePhoneBookSync' => 'Cloud Phonebook',
+    'SubHeaderModulePhoneBookSync'  => 'Unified phonebook with internal extensions and external contacts',
     'module_name'               => 'Cloud Phonebook',
     'module_description'        => 'Unified phonebook with internal extensions and external contacts',
     'phonebook_title'           => 'Cloud Phonebook',
