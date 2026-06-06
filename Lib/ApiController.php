@@ -18,8 +18,8 @@ class ApiController
     {
         $result = new PBXApiResult();
         try {
-            $result->data['contacts'] = ModulePhoneBookSyncConf::getAllContacts();
-            $result->data['version']  = ModulePhoneBookSyncConf::VERSION;
+            $result->data['contacts'] = PhoneBookSyncConf::getAllContacts();
+            $result->data['version']  = PhoneBookSyncConf::VERSION;
             $result->success = true;
         } catch (\Throwable $e) {
             $result->success  = false;
@@ -74,7 +74,7 @@ class ApiController
 
         if ($contact->save()) {
             // Auto-sync CallerID after every change
-            ModulePhoneBookSyncConf::syncToCallerID();
+            PhoneBookSyncConf::syncToCallerID();
             $result->success       = true;
             $result->data['id']    = $contact->id;
             $result->data['contact'] = [
@@ -116,7 +116,7 @@ class ApiController
         if (isset($params['notes']))      $contact->notes      = trim($params['notes']);
 
         if ($contact->save()) {
-            ModulePhoneBookSyncConf::syncToCallerID();
+            PhoneBookSyncConf::syncToCallerID();
             $result->success = true;
         } else {
             $result->success  = false;
@@ -141,7 +141,7 @@ class ApiController
         }
 
         if ($contact->delete()) {
-            ModulePhoneBookSyncConf::syncToCallerID();
+            PhoneBookSyncConf::syncToCallerID();
             $result->success = true;
         } else {
             $result->success  = false;
@@ -156,7 +156,7 @@ class ApiController
     public static function syncCallerID(array $params = []): PBXApiResult
     {
         $result          = new PBXApiResult();
-        $result->success = ModulePhoneBookSyncConf::syncToCallerID();
+        $result->success = PhoneBookSyncConf::syncToCallerID();
         if (!$result->success) {
             $result->messages = ['callerid_sync_fail'];
         }
@@ -170,7 +170,7 @@ class ApiController
     {
         $result              = new PBXApiResult();
         $result->success     = true;
-        $result->data['csv'] = ModulePhoneBookSyncConf::exportToCsv();
+        $result->data['csv'] = PhoneBookSyncConf::exportToCsv();
         return $result;
     }
 
@@ -181,10 +181,10 @@ class ApiController
     {
         $result    = new PBXApiResult();
         $csvData   = $params['csv'] ?? '';
-        $importResult = ModulePhoneBookSyncConf::importFromCsv($csvData);
+        $importResult = PhoneBookSyncConf::importFromCsv($csvData);
 
         if ($importResult['imported'] > 0) {
-            ModulePhoneBookSyncConf::syncToCallerID();
+            PhoneBookSyncConf::syncToCallerID();
         }
 
         $result->success                = true;
@@ -201,7 +201,7 @@ class ApiController
     public static function getPublicContacts(): void
     {
         $format = $_GET['format'] ?? 'json';
-        $contacts = ModulePhoneBookSyncConf::getAllContacts();
+        $contacts = PhoneBookSyncConf::getAllContacts();
 
         if ($format === 'xml') {
             // XML formaat voor toestellen die dat verwachten (Yealink etc.)
