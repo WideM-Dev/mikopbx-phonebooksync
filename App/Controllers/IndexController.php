@@ -1,19 +1,18 @@
 <?php
 /**
- * Cloud Phonebook v1.1.5 — IndexController
- *
- * Erft van ModuleController (MikoPBX\AdminCabinet\Controllers\ModuleController)
- * Dit is de correcte basisklasse voor module-controllers in MikoPBX 2024+
- * ModuleController handelt autorisatie correct af voor module-pagina's
+ * Cloud Phonebook v1.3.0 — IndexController
+ * Erft van BaseController (enige beschikbare basisklasse in MikoPBX 2026.x)
+ * View pad wordt automatisch bepaald door BaseController::beforeExecuteRoute():
+ * Modules/ModulePhoneBookSync/Index/index → App/Views/ModulePhoneBookSync/Index/index.volt
  */
 namespace Modules\ModulePhoneBookSync\App\Controllers;
 
-use MikoPBX\AdminCabinet\Controllers\ModuleController;
+use MikoPBX\AdminCabinet\Controllers\BaseController;
 use MikoPBX\Common\Models\PbxSettings;
 
-class IndexController extends ModuleController
+class IndexController extends BaseController
 {
-    private const VERSION   = '1.1.5';
+    private const VERSION   = '1.3.0';
     private const SUPPORTED = ['en', 'nl', 'de', 'fr', 'ru'];
     private const LANG_MAP  = [
         'nl'=>'nl','en'=>'en','de'=>'de','fr'=>'fr','ru'=>'ru',
@@ -32,11 +31,12 @@ class IndexController extends ModuleController
 
     private function loadTranslations(string $pbxLang): array
     {
-        $langCode = strtolower(substr($pbxLang, 0, 2));
-        $lang     = self::LANG_MAP[$langCode] ?? 'en';
+        $langCode  = strtolower(substr($pbxLang, 0, 2));
+        $lang      = self::LANG_MAP[$langCode] ?? 'en';
         if (!in_array($lang, self::SUPPORTED, true)) {
             $lang = 'en';
         }
+        // moduleDir is beschikbaar via BaseController
         $moduleDir = dirname(__DIR__, 2);
         $file      = $moduleDir . '/Messages/' . $lang . '.php';
         $fallback  = $moduleDir . '/Messages/en.php';
@@ -49,15 +49,14 @@ class IndexController extends ModuleController
     private function getChangelog(): array
     {
         return [
-            '1.1.5' => [
-                'en' => 'Fixed authorization: switched to ModuleController base class.',
-                'nl' => 'Autorisatie opgelost: overgegaan op ModuleController basisklasse.',
+            '1.3.0' => [
+                'en' => 'Fixed authorization: correct view path and BaseController inheritance.',
+                'nl' => 'Autorisatie opgelost: correct view pad en BaseController overerving.',
             ],
-            '1.1.4' => ['en' => 'Added ConfigClass main module class.'],
-            '1.1.3' => ['en' => 'Added db/ directory, fixed Phalcon DI.'],
-            '1.1.2' => ['en' => 'Added addToSidebar() in installer.'],
-            '1.1.1' => ['en' => 'Added BreadcrumbModulePhoneBookSync key.'],
-            '1.1.0' => ['en' => 'PBX language detection, Russian, renamed to Cloud Phonebook, WideM.'],
+            '1.2.9' => ['en' => 'Separate XML formats per brand (Yealink, Fanvil, Snom, Cisco, Grandstream).'],
+            '1.2.8' => ['en' => 'Normalize phone numbers from ModulePhoneBook (strip dashes/spaces).'],
+            '1.2.7' => ['en' => 'Read contacts from ModulePhoneBook m_PhoneBook table.'],
+            '1.2.6' => ['en' => 'Fanvil uses same XML format as Yealink.'],
             '1.0.0' => ['en' => 'Initial release.'],
         ];
     }
