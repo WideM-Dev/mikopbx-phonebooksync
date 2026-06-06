@@ -170,9 +170,9 @@
 
         let data;
         if (id) {
-            data = await apiFetch('PUT', '/contacts/' + id, { name, number, department: dept, category: cat });
+            data = await apiFetch('POST', '/updateContact', {id, { name, number, department: dept, category: cat });
         } else {
-            data = await apiFetch('POST', '/contacts', { name, number, department: dept, category: cat });
+            data = await apiFetch('POST', '/saveContact', { name, number, department: dept, category: cat });
         }
 
         if (data.success) {
@@ -186,7 +186,7 @@
 
     async function deleteContact(id) {
         if (!confirm(t('field_name') + '?')) return;
-        const data = await apiFetch('DELETE', '/contacts/' + id);
+        const data = await apiFetch('POST', '/deleteContact', {id});
         if (data.success) await loadContacts();
     }
 
