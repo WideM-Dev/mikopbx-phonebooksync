@@ -1,8 +1,8 @@
 <?php
 // Cloud Phonebook — Русский
 return [
-    'BreadcrumbModulePhonebookSync' => 'Облачный справочник',
-    'SubHeaderModulePhonebookSync'  => 'Единый телефонный справочник с внутренними номерами и внешними контактами',
+    'BreadcrumbModulePhoneBookSync' => 'Облачный справочник',
+    'SubHeaderModulePhoneBookSync'  => 'Единый телефонный справочник с внутренними номерами и внешними контактами',
     'module_name'               => 'Облачный справочник',
     'module_description'        => 'Единый телефонный справочник с внутренними номерами и внешними контактами',
     'phonebook_title'           => 'Облачный телефонный справочник',
