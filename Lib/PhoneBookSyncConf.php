@@ -90,10 +90,13 @@ class PhoneBookSyncConf extends ConfigClass
             );
             $rows = $stmt->execute();
             while ($row = $rows->fetchArray(SQLITE3_ASSOC)) {
+                // Normaliseer nummer: verwijder streepjes en spaties
+                // +31-50-205-0400 → +31502050400
+                $number = preg_replace('/[\s\-]/', '', $row['number_rep']);
                 $result[] = [
                     'id'       => 'mpb_' . $row['id'],
                     'name'     => $row['call_id'],
-                    'number'   => $row['number_rep'],
+                    'number'   => $number,
                     'type'     => 'external',
                     'source'   => 'modulephonebook',
                     'readonly' => false,
