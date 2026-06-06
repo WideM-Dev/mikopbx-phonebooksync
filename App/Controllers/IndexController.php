@@ -6,7 +6,7 @@
  * Dit is de correcte basisklasse voor module-controllers in MikoPBX 2024+
  * ModuleController handelt autorisatie correct af voor module-pagina's
  */
-namespace Modules\ModulePhonebookSync\App\Controllers;
+namespace Modules\ModulePhoneBookSync\App\Controllers;
 
 use MikoPBX\AdminCabinet\Controllers\ModuleController;
 use MikoPBX\Common\Models\PbxSettings;
@@ -56,7 +56,7 @@ class IndexController extends ModuleController
             '1.1.4' => ['en' => 'Added ConfigClass main module class.'],
             '1.1.3' => ['en' => 'Added db/ directory, fixed Phalcon DI.'],
             '1.1.2' => ['en' => 'Added addToSidebar() in installer.'],
-            '1.1.1' => ['en' => 'Added BreadcrumbModulePhonebookSync key.'],
+            '1.1.1' => ['en' => 'Added BreadcrumbModulePhoneBookSync key.'],
             '1.1.0' => ['en' => 'PBX language detection, Russian, renamed to Cloud Phonebook, WideM.'],
             '1.0.0' => ['en' => 'Initial release.'],
         ];
