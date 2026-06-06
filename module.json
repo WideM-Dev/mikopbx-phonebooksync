@@ -1,0 +1,21 @@
+{
+  "moduleUniqueID": "ModulePhoneBook",
+  "version": "1.1.5",
+  "min_pbx_version": "2024.1.0",
+  "developer": "WideM",
+  "support_email": "support@widem.nl",
+  "name": {
+    "en": "Cloud Phonebook",
+    "nl": "Cloud Telefoonboek",
+    "de": "Cloud Telefonbuch",
+    "fr": "Cloud Annuaire",
+    "ru": "Облачный телефонный справочник"
+  },
+  "description": {
+    "en": "Unified phonebook combining internal PBX extensions and external contacts with automatic CallerID sync.",
+    "nl": "Gecombineerd telefoonboek met interne toestellen en externe contacten inclusief CallerID synchronisatie.",
+    "de": "Vereinheitlichtes Telefonbuch mit internen Nebenstellen und externen Kontakten mit CallerID-Sync.",
+    "fr": "Annuaire unifié combinant les extensions PBX internes et les contacts externes avec synchronisation CallerID.",
+    "ru": "Единый телефонный справочник с внутренними номерами АТС и внешними контактами с синхронизацией CallerID."
+  }
+}
