@@ -1,6 +1,6 @@
 {
-  "moduleUniqueID": "ModulePhoneBook",
-  "version": "1.1.5",
+  "moduleUniqueID": "ModulePhonebookSync",
+  "version": "1.1.6",
   "min_pbx_version": "2024.1.0",
   "developer": "WideM",
   "support_email": "support@widem.nl",
