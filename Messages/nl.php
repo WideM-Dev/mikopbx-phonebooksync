@@ -1,8 +1,8 @@
 <?php
 // Cloud Phonebook — Nederlands
 return [
-    'BreadcrumbModulePhonebookSync' => 'Cloud Telefoonboek',
-    'SubHeaderModulePhonebookSync'  => 'Gecombineerd telefoonboek met interne toestellen en externe contacten',
+    'BreadcrumbModulePhoneBookSync' => 'Cloud Telefoonboek',
+    'SubHeaderModulePhoneBookSync'  => 'Gecombineerd telefoonboek met interne toestellen en externe contacten',
     'module_name'               => 'Cloud Telefoonboek',
     'module_description'        => 'Gecombineerd telefoonboek met interne toestellen en externe contacten',
     'phonebook_title'           => 'Cloud Telefoonboek',
