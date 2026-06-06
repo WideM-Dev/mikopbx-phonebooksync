@@ -12,8 +12,8 @@
     <script id="phonebook-config" type="application/json">
         {
             "version": "{{ version }}",
-            "moduleId": "ModulePhoneBook",
-            "apiBase": "/pbxcore/api/modules/ModulePhoneBook",
+            "moduleId": "ModulePhonebookSync",
+            "apiBase": "/pbxcore/api/modules/ModulePhonebookSync",
             "pbxLang": "{{ pbxLang }}",
             "changelog": {{ changelog | json_encode | raw }}
         }
@@ -28,5 +28,5 @@
 
 {% block javascripts %}
     {{ super() }}
-    <script src="/pbxcore/modules/ModulePhoneBook/public/js/phonebook.js"></script>
+    <script src="/pbxcore/modules/ModulePhonebookSync/public/js/phonebook.js"></script>
 {% endblock %}
