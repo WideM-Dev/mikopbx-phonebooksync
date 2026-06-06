@@ -1,6 +1,6 @@
 /**
  * Cloud Phonebook — Frontend  (WideM)
- * v1.1.6  |  EN (default) / NL / DE / FR / RU
+ * v1.1.7  |  EN (default) / NL / DE / FR / RU
  *
  * Werkt standalone (index.html) én als MikoPBX module (geladen via index.volt).
  * Taaldetectie: (1) PBXLanguage uit MikoPBX config (via phonebook-config JSON),
@@ -18,8 +18,8 @@
 
     const CFG = cfgEl ? JSON.parse(cfgEl.textContent) : {
         version:   '1.0.0',
-        moduleId:  'ModulePhonebookSync',
-        apiBase:   '/pbxcore/api/modules/ModulePhonebookSync',
+        moduleId:  'ModulePhoneBookSync',
+        apiBase:   '/pbxcore/api/modules/ModulePhoneBookSync',
         changelog: {
             '1.0.0': 'Initial release. Auto-sync internal extensions, external contacts CRUD, CallerID integration, multilingual NL/EN/DE/FR.'
         }
