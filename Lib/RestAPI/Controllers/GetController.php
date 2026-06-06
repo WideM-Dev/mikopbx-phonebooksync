@@ -1,8 +1,12 @@
 <?php
 declare(strict_types=1);
 /**
- * Cloud Phonebook — GetController v1.2.4
- * Ondersteunt meerdere XML formaten via ?format= parameter
+ * Cloud Phonebook — GetController v1.2.5
+ * Gebruikt exact hetzelfde patroon als ModuleAutoprovision:
+ * - $this->response->setContentType() voor de Content-Type header
+ * - echo voor de output
+ * - $this->response->sendRaw() om raw te sturen
+ * - terminateStreamedResponse() (eigen implementatie) om de Phalcon envelope te stoppen
  */
 namespace Modules\ModulePhoneBookSync\Lib\RestAPI\Controllers;
 
@@ -19,31 +23,41 @@ class GetController extends ModulesControllerBase
         switch ($format) {
             case 'yealink':
             case 'xml':
+                $this->response->setContentType('application/xml', 'UTF-8');
                 $this->echoYealink($contacts);
                 break;
             case 'fanvil':
+                $this->response->setContentType('application/xml', 'UTF-8');
                 $this->echoFanvil($contacts);
                 break;
             case 'grandstream':
+                $this->response->setContentType('application/xml', 'UTF-8');
                 $this->echoGrandstream($contacts);
                 break;
             default:
+                $this->response->setContentType('application/json', 'UTF-8');
                 $this->echoJson($contacts);
                 break;
         }
 
-        exit();
+        $this->response->sendRaw();
+        $this->terminateStreamedResponse();
     }
 
     /**
-     * Yealink XML formaat — werkt ook voor Snom
-     * <YealinkIPPhoneDirectory>
-     *   <DirectoryEntry><Name>...</Name><Telephone>...</Telephone></DirectoryEntry>
-     * </YealinkIPPhoneDirectory>
+     * Exact dezelfde implementatie als ModuleAutoprovision
      */
+    private function terminateStreamedResponse(): void
+    {
+        while (ob_get_level() > 0 && @ob_end_flush()) {
+            // drain output buffers
+        }
+        flush();
+        exit;
+    }
+
     private function echoYealink(array $contacts): void
     {
-        header('Content-Type: application/xml; charset=UTF-8');
         echo "<?xml version='1.0' encoding='UTF-8'?>" . PHP_EOL;
         echo '<YealinkIPPhoneDirectory>' . PHP_EOL;
         foreach ($contacts as $c) {
@@ -57,15 +71,8 @@ class GetController extends ModulesControllerBase
         echo '</YealinkIPPhoneDirectory>';
     }
 
-    /**
-     * Fanvil XML formaat
-     * <AddressBook>
-     *   <Contact><Name>...</Name><Phone>...</Phone></Contact>
-     * </AddressBook>
-     */
     private function echoFanvil(array $contacts): void
     {
-        header('Content-Type: application/xml; charset=UTF-8');
         echo "<?xml version='1.0' encoding='UTF-8'?>" . PHP_EOL;
         echo '<AddressBook>' . PHP_EOL;
         foreach ($contacts as $c) {
@@ -79,15 +86,8 @@ class GetController extends ModulesControllerBase
         echo '</AddressBook>';
     }
 
-    /**
-     * Grandstream XML formaat
-     * <AddressBook>
-     *   <Contact><FirstName>...</FirstName><Phone><phonenumber>...</phonenumber><accountindex>0</accountindex></Phone></Contact>
-     * </AddressBook>
-     */
     private function echoGrandstream(array $contacts): void
     {
-        header('Content-Type: application/xml; charset=UTF-8');
         echo "<?xml version='1.0' encoding='UTF-8'?>" . PHP_EOL;
         echo '<AddressBook>' . PHP_EOL;
         foreach ($contacts as $c) {
@@ -102,12 +102,8 @@ class GetController extends ModulesControllerBase
         echo '</AddressBook>';
     }
 
-    /**
-     * JSON formaat — standaard
-     */
     private function echoJson(array $contacts): void
     {
-        header('Content-Type: application/json; charset=UTF-8');
         $result = array_map(static function (array $c): array {
             return [
                 'name'       => $c['name']       ?? '',
