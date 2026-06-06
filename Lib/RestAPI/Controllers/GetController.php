@@ -1,12 +1,10 @@
 <?php
 declare(strict_types=1);
 /**
- * Cloud Phonebook — GetController v1.2.5
- * Gebruikt exact hetzelfde patroon als ModuleAutoprovision:
- * - $this->response->setContentType() voor de Content-Type header
- * - echo voor de output
- * - $this->response->sendRaw() om raw te sturen
- * - terminateStreamedResponse() (eigen implementatie) om de Phalcon envelope te stoppen
+ * Cloud Phonebook — GetController v1.2.6
+ *
+ * Fanvil gebruikt CiscoIPPhoneDirectory formaat (zelfde als Yealink).
+ * ?format=yealink en ?format=fanvil geven nu allebei hetzelfde formaat terug.
  */
 namespace Modules\ModulePhoneBookSync\Lib\RestAPI\Controllers;
 
@@ -22,13 +20,12 @@ class GetController extends ModulesControllerBase
 
         switch ($format) {
             case 'yealink':
+            case 'fanvil':      // Fanvil gebruikt exact hetzelfde formaat als Yealink/Cisco
+            case 'cisco':
+            case 'snom':
             case 'xml':
                 $this->response->setContentType('application/xml', 'UTF-8');
-                $this->echoYealink($contacts);
-                break;
-            case 'fanvil':
-                $this->response->setContentType('application/xml', 'UTF-8');
-                $this->echoFanvil($contacts);
+                $this->echoCiscoDirectory($contacts);
                 break;
             case 'grandstream':
                 $this->response->setContentType('application/xml', 'UTF-8');
@@ -45,18 +42,11 @@ class GetController extends ModulesControllerBase
     }
 
     /**
-     * Exact dezelfde implementatie als ModuleAutoprovision
+     * Cisco/Yealink/Fanvil/Snom formaat — breed ondersteund
+     * Root: YealinkIPPhoneDirectory
+     * Entries: DirectoryEntry > Name + Telephone
      */
-    private function terminateStreamedResponse(): void
-    {
-        while (ob_get_level() > 0 && @ob_end_flush()) {
-            // drain output buffers
-        }
-        flush();
-        exit;
-    }
-
-    private function echoYealink(array $contacts): void
+    private function echoCiscoDirectory(array $contacts): void
     {
         echo "<?xml version='1.0' encoding='UTF-8'?>" . PHP_EOL;
         echo '<YealinkIPPhoneDirectory>' . PHP_EOL;
@@ -71,21 +61,9 @@ class GetController extends ModulesControllerBase
         echo '</YealinkIPPhoneDirectory>';
     }
 
-    private function echoFanvil(array $contacts): void
-    {
-        echo "<?xml version='1.0' encoding='UTF-8'?>" . PHP_EOL;
-        echo '<AddressBook>' . PHP_EOL;
-        foreach ($contacts as $c) {
-            $name   = htmlspecialchars($c['name']   ?? '', ENT_XML1, 'UTF-8');
-            $number = htmlspecialchars($c['number'] ?? ($c['extension'] ?? ''), ENT_XML1, 'UTF-8');
-            echo "\t<Contact>" . PHP_EOL;
-            echo "\t\t<Name>{$name}</Name>" . PHP_EOL;
-            echo "\t\t<Phone>{$number}</Phone>" . PHP_EOL;
-            echo "\t</Contact>" . PHP_EOL;
-        }
-        echo '</AddressBook>';
-    }
-
+    /**
+     * Grandstream formaat
+     */
     private function echoGrandstream(array $contacts): void
     {
         echo "<?xml version='1.0' encoding='UTF-8'?>" . PHP_EOL;
@@ -102,6 +80,9 @@ class GetController extends ModulesControllerBase
         echo '</AddressBook>';
     }
 
+    /**
+     * JSON formaat
+     */
     private function echoJson(array $contacts): void
     {
         $result = array_map(static function (array $c): array {
@@ -116,5 +97,16 @@ class GetController extends ModulesControllerBase
             ['contacts' => $result, 'total' => count($result)],
             JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
         );
+    }
+
+    /**
+     * Exact dezelfde implementatie als ModuleAutoprovision
+     */
+    private function terminateStreamedResponse(): void
+    {
+        while (ob_get_level() > 0 && @ob_end_flush()) {
+        }
+        flush();
+        exit;
     }
 }
