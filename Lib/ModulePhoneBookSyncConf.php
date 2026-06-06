@@ -1,72 +1,38 @@
 <?php
 /**
- * Cloud Phonebook — ModulePhoneBookSyncConf v1.1.9
- * Registreert publieke REST routes conform MikoPBX documentatie formaat
+ * Cloud Phonebook — ModulePhoneBookSyncConf v1.2.0
+ * Route formaat exact conform ModuleAutoprovision:
+ * [ControllerClass, 'method', '/uri', 'httpmethod', '/', true]
+ * true = publiek toegankelijk (geen auth)
  */
 namespace Modules\ModulePhoneBookSync\Lib;
 
 use MikoPBX\Modules\Config\ConfigClass;
 use MikoPBX\Common\Models\PbxSettings;
+use Modules\ModulePhoneBookSync\Lib\RestAPI\Controllers\GetController;
 
 class ModulePhoneBookSyncConf extends ConfigClass
 {
     /**
-     * Registreert extra REST routes.
-     * Formaat per route: [ControllerClass, 'actionMethod', '/uri', 'httpmethod', '/', allowNoAuth]
-     * allowNoAuth = false = geen authenticatie vereist (publiek toegankelijk)
-     *
-     * @return array
+     * Registreert publieke REST routes — formaat conform AutoprovisionConf
      */
     public function getPBXCoreRESTAdditionalRoutes(): array
     {
         return [
-            // Publieke phonebook endpoint voor telefoontoestellen — geen auth vereist
-            [
-                ApiController::class,
-                'getPublicContacts',
-                '/pbxcore/api/phonebooksync/contacts',
-                'get',
-                '/',
-                false,
-            ],
-            // XML variant voor Yealink/Fanvil toestellen
-            [
-                ApiController::class,
-                'getPublicContacts',
-                '/pbxcore/api/phonebooksync/contacts.xml',
-                'get',
-                '/',
-                false,
-            ],
+            [GetController::class, 'getContacts', '/pbxcore/api/phonebooksync/contacts',     'get', '/', true],
+            [GetController::class, 'getContacts', '/pbxcore/api/phonebooksync/contacts.xml',  'get', '/', true],
         ];
     }
 
     /**
-     * Laad vertalingen op basis van PBXLanguage instelling
-     */
-    public static function getTranslations(): array
-    {
-        $langMap = [
-            'nl'=>'nl','en'=>'en','de'=>'de','fr'=>'fr','ru'=>'ru',
-            'be'=>'ru','uk'=>'ru','kk'=>'ru',
-        ];
-        $pbxLang   = strtolower(substr(PbxSettings::getValueByKey('PBXLanguage') ?? 'en-gb', 0, 2));
-        $lang      = $langMap[$pbxLang] ?? 'en';
-        $moduleDir = dirname(__DIR__);
-        $file      = $moduleDir . '/Messages/' . $lang . '.php';
-        $fallback  = $moduleDir . '/Messages/en.php';
-        $result    = file_exists($file) ? require $file : (file_exists($fallback) ? require $fallback : []);
-        return is_array($result) ? $result : [];
-    }
-
-    /**
-     * Geeft alle contacten terug (intern + extern) voor CallerID en API
+     * Geeft alle contacten terug (intern + extern)
      */
     public static function getAllContacts(): array
     {
-        $internal = self::getInternalExtensions();
-        $external = self::getExternalContacts();
-        return array_merge($internal, $external);
+        return array_merge(
+            self::getInternalExtensions(),
+            self::getExternalContacts()
+        );
     }
 
     public static function getInternalExtensions(): array
@@ -79,17 +45,15 @@ class ModulePhoneBookSyncConf extends ConfigClass
             ]);
             foreach ($extensions as $ext) {
                 $result[] = [
-                    'id'         => 'int_' . $ext->id,
-                    'name'       => $ext->callerid ?: 'Extension ' . $ext->number,
-                    'number'     => $ext->number,
-                    'department' => '',
-                    'category'   => '',
-                    'type'       => 'internal',
-                    'readonly'   => true,
+                    'id'       => 'int_' . $ext->id,
+                    'name'     => $ext->callerid ?: 'Extension ' . $ext->number,
+                    'number'   => $ext->number,
+                    'type'     => 'internal',
+                    'readonly' => true,
                 ];
             }
         } catch (\Throwable $e) {
-            error_log('[ModulePhoneBookSync] getInternalExtensions error: ' . $e->getMessage());
+            error_log('[ModulePhoneBookSync] getInternalExtensions: ' . $e->getMessage());
         }
         return $result;
     }
@@ -111,7 +75,7 @@ class ModulePhoneBookSyncConf extends ConfigClass
                 ];
             }
         } catch (\Throwable $e) {
-            error_log('[ModulePhoneBookSync] getExternalContacts error: ' . $e->getMessage());
+            error_log('[ModulePhoneBookSync] getExternalContacts: ' . $e->getMessage());
         }
         return $result;
     }
@@ -131,8 +95,20 @@ class ModulePhoneBookSyncConf extends ConfigClass
             }
             return true;
         } catch (\Throwable $e) {
-            error_log('[ModulePhoneBookSync] CallerID sync error: ' . $e->getMessage());
+            error_log('[ModulePhoneBookSync] CallerID sync: ' . $e->getMessage());
             return false;
         }
+    }
+
+    public static function getTranslations(): array
+    {
+        $langMap   = ['nl'=>'nl','en'=>'en','de'=>'de','fr'=>'fr','ru'=>'ru','be'=>'ru','uk'=>'ru','kk'=>'ru'];
+        $pbxLang   = strtolower(substr(PbxSettings::getValueByKey('PBXLanguage') ?? 'en-gb', 0, 2));
+        $lang      = $langMap[$pbxLang] ?? 'en';
+        $moduleDir = dirname(__DIR__);
+        $file      = $moduleDir . '/Messages/' . $lang . '.php';
+        $fallback  = $moduleDir . '/Messages/en.php';
+        $result    = file_exists($file) ? require $file : (file_exists($fallback) ? require $fallback : []);
+        return is_array($result) ? $result : [];
     }
 }
