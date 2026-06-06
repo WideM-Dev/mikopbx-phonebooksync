@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace Modules\ModulePhoneBookSync\Lib\RestAPI\Controllers;
 
 use MikoPBX\PBXCoreREST\Controllers\Modules\ModulesControllerBase;
-use Modules\ModulePhoneBookSync\Lib\ModulePhoneBookSyncConf;
+use Modules\ModulePhoneBookSync\Lib\PhoneBookSyncConf;
 
 class GetController extends ModulesControllerBase
 {
@@ -22,7 +22,7 @@ class GetController extends ModulesControllerBase
     public function getContacts(): void
     {
         $format   = $_REQUEST['format'] ?? 'json';
-        $contacts = ModulePhoneBookSyncConf::getAllContacts();
+        $contacts = PhoneBookSyncConf::getAllContacts();
 
         if ($format === 'xml') {
             $this->echoXml($contacts);
