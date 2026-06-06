@@ -41,10 +41,10 @@ mikopbx-phonebooksync/
 ├── Setup/
 │   └── PbxExtensionSetup.php          # Installer / uninstaller
 ├── Lib/
-│   ├── ModulePhonebookSyncConf.php        # Main ConfigClass (routing & auth)
+│   ├── ModulePhoneBookSyncConf.php        # Main ConfigClass (routing & auth)
 │   └── ApiController.php              # REST API endpoints
 ├── Models/
-│   └── PhonebookSyncContact.php           # Phalcon model — external contacts
+│   └── PhoneBookSyncContact.php           # Phalcon model — external contacts
 ├── Messages/
 │   ├── en.php                         # English (default)
 │   ├── nl.php                         # Dutch
@@ -66,7 +66,7 @@ mikopbx-phonebooksync/
 
 ## REST API
 
-All endpoints under `/pbxcore/api/modules/ModulePhonebookSync/`:
+All endpoints under `/pbxcore/api/modules/ModulePhoneBookSync/`:
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -82,7 +82,7 @@ All endpoints under `/pbxcore/api/modules/ModulePhonebookSync/`:
 
 ## CallerID Integration
 
-After every add/edit/delete the module automatically writes to MikoPBX's built-in `pb_PhoneBook` table. Entries are tagged with `source = 'ModulePhonebookSync'` and cleaned up on uninstall.
+After every add/edit/delete the module automatically writes to MikoPBX's built-in `pb_PhoneBook` table. Entries are tagged with `source = 'ModulePhoneBookSync'` and cleaned up on uninstall.
 
 ---
 
@@ -92,7 +92,7 @@ After every add/edit/delete the module automatically writes to MikoPBX's built-i
 - Fixed authorization error: switched to correct controller base class
 
 ### v1.1.4
-- Added `ModulePhonebookSyncConf` ConfigClass for MikoPBX routing
+- Added `ModulePhoneBookSyncConf` ConfigClass for MikoPBX routing
 
 ### v1.1.3
 - Added `db/` directory, fixed Phalcon DI service registration
@@ -101,7 +101,7 @@ After every add/edit/delete the module automatically writes to MikoPBX's built-i
 - Added `addToSidebar()` in installer
 
 ### v1.1.1
-- Added `BreadcrumbModulePhonebookSync` translation key (fixes module name in UI)
+- Added `BreadcrumbModulePhoneBookSync` translation key (fixes module name in UI)
 
 ### v1.1.0
 - PBX interface language detection (`PBXLanguage`)
