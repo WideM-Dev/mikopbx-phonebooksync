@@ -1,0 +1,27 @@
+# MikoPBX module gitignore
+
+# Database bestanden
+db/module.db
+db/module.db-shm
+db/module.db-wal
+
+# Compiled JS (alleen bronbestanden committen)
+public/assets/js/cache/
+public/js/cache/
+
+# OS bestanden
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# PHP
+vendor/
+composer.lock
+
+# ZIP artefacten
+*.zip
