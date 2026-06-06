@@ -193,3 +193,43 @@ class ApiController
         return $result;
     }
 }
+
+    // ------------------------------------------------------------------
+    // GET /pbxcore/api/phonebooksync/contacts — PUBLIEK, geen auth vereist
+    // Formaat compatibel met telefoontoestellen (Yealink, Fanvil, Snom etc.)
+    // ------------------------------------------------------------------
+    public static function getPublicContacts(): void
+    {
+        $format = $_GET['format'] ?? 'json';
+        $contacts = ModulePhoneBookSyncConf::getAllContacts();
+
+        if ($format === 'xml') {
+            // XML formaat voor toestellen die dat verwachten (Yealink etc.)
+            header('Content-Type: application/xml; charset=utf-8');
+            echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+            echo '<AddressBook>' . "\n";
+            foreach ($contacts as $c) {
+                $name   = htmlspecialchars($c['name'] ?? '', ENT_XML1);
+                $number = htmlspecialchars($c['number'] ?? ($c['extension'] ?? ''), ENT_XML1);
+                $type   = $c['type'] === 'internal' ? 'Internal' : 'External';
+                echo "  <Contact>\n";
+                echo "    <Name>{$name}</Name>\n";
+                echo "    <Phone type=\"{$type}\">{$number}</Phone>\n";
+                echo "  </Contact>\n";
+            }
+            echo '</AddressBook>';
+        } else {
+            // JSON formaat (standaard)
+            header('Content-Type: application/json; charset=utf-8');
+            $result = array_map(function($c) {
+                return [
+                    'name'   => $c['name'] ?? '',
+                    'number' => $c['number'] ?? ($c['extension'] ?? ''),
+                    'type'   => $c['type'] ?? 'external',
+                    'department' => $c['department'] ?? '',
+                ];
+            }, $contacts);
+            echo json_encode(['contacts' => $result, 'total' => count($result)], JSON_UNESCAPED_UNICODE);
+        }
+        exit;
+    }
