@@ -1,39 +1,39 @@
-# Cloud Phonebook voor MikoPBX
+# Cloud Phonebook for MikoPBX
 
-**Versie:** 1.4.3  
-**Ontwikkelaar:** Michiel Meedema — [WideM](https://widem.nl) (support@widem.nl)  
-**Compatibiliteit:** MikoPBX 2024.1+ / 2026.x  
-**Licentie:** GPLv3
-
----
-
-## Wat doet deze module?
-
-Cloud Phonebook biedt één publieke URL waarmee IP-telefoons een actueel en gecombineerd telefoonboek kunnen ophalen. De module combineert automatisch:
-
-1. **Interne toestellen** — direct uit de PBX Extensions tabel (201 - Olaf, 202 - Homme, enz.)
-2. **ModulePhoneBook contacten** — uit de ingebouwde MikoPBX Phonebook module (externe nummers zoals klanten, leveranciers, enz.)
-
-Geen handmatige synchronisatie, geen afhankelijkheid van Autoprovision — de URL geeft altijd de actuele stand terug.
+**Version:** 1.4.3  
+**Developer:** Michiel Meedema — [WideM](https://widem.nl) (support@widem.nl)  
+**Compatibility:** MikoPBX 2024.1+ / 2026.x  
+**License:** GPLv3
 
 ---
 
-## Vereisten
+## What does this module do?
 
-- MikoPBX 2024.1 of hoger
-- De ingebouwde **ModulePhoneBook** module moet geïnstalleerd en actief zijn
+Cloud Phonebook provides a single public URL that IP phones can use to retrieve an up-to-date phonebook. The module automatically combines:
+
+1. **Internal extensions** — directly from the PBX Extensions table (201 - Olaf, 202 - Homme, etc.)
+2. **ModulePhoneBook contacts** — from the built-in MikoPBX Phonebook module (external numbers such as clients, suppliers, etc.)
+
+No manual synchronisation, no dependency on Autoprovision — the URL always returns the current state.
 
 ---
 
-## Installatie
+## Requirements
 
-1. Download de laatste ZIP van de [Releases pagina](../../releases/latest)
-2. Ga in MikoPBX naar **Modules → Module Management → Upload new module**
-3. Upload de ZIP en activeer de module
-4. Voer na installatie de volgende commando's uit via SSH:
+- MikoPBX 2024.1 or higher
+- The built-in **ModulePhoneBook** module must be installed and active
+
+---
+
+## Installation
+
+1. Download the latest ZIP from the [Releases page](../../releases/latest)
+2. In MikoPBX go to **Modules → Module Management → Upload new module**
+3. Upload the ZIP and activate the module
+4. Run the following commands via SSH after installation:
 
 ```bash
-# View symlink corrigeren (vereist na elke installatie)
+# Fix view symlink (required after every install)
 rm -f /offload/rootfs/usr/www/src/AdminCabinet/Views/Modules/ModulePhoneBookSync
 ln -sf /storage/usbdisk1/mikopbx/custom_modules/ModulePhoneBookSync/App/Views/ModulePhoneBookSync \
     /offload/rootfs/usr/www/src/AdminCabinet/Views/Modules/ModulePhoneBookSync
@@ -41,36 +41,36 @@ ln -sf /storage/usbdisk1/mikopbx/custom_modules/ModulePhoneBookSync/App/Views/Mo
 
 ---
 
-## Contacten beheren
+## Managing contacts
 
-Contacten toevoegen en beheren doe je via de ingebouwde **ModulePhoneBook** module:
+Add and manage contacts via the built-in **ModulePhoneBook** module:
 
 **Modules → Phonebook**
 
-- Interne toestellen worden automatisch opgehaald vanuit de PBX
-- Externe nummers voeg je toe via ModulePhoneBook
-- Alle contacten verschijnen automatisch in de Cloud Phonebook URL's
+- Internal extensions are pulled automatically from the PBX
+- External numbers are added via ModulePhoneBook
+- All contacts appear automatically in the Cloud Phonebook URLs
 
 ---
 
-## URL's voor IP-telefoons
+## URLs for IP phones
 
-Configureer de onderstaande URL op je toestellen als remote phonebook:
+Configure the URL below on your devices as a remote phonebook:
 
-| Merk | URL |
-|------|-----|
-| **Yealink** | `https://jouw-pbx/pbxcore/api/phonebooksync/contacts?format=yealink` |
-| **Fanvil** | `https://jouw-pbx/pbxcore/api/phonebooksync/contacts?format=fanvil` |
-| **Snom** | `https://jouw-pbx/pbxcore/api/phonebooksync/contacts?format=snom` |
-| **Cisco** | `https://jouw-pbx/pbxcore/api/phonebooksync/contacts?format=cisco` |
-| **Grandstream** | `https://jouw-pbx/pbxcore/api/phonebooksync/contacts?format=grandstream` |
-| **JSON** | `https://jouw-pbx/pbxcore/api/phonebooksync/contacts` |
+| Brand | URL |
+|-------|-----|
+| **Yealink** | `https://your-pbx/pbxcore/api/phonebooksync/contacts?format=yealink` |
+| **Fanvil** | `https://your-pbx/pbxcore/api/phonebooksync/contacts?format=fanvil` |
+| **Snom** | `https://your-pbx/pbxcore/api/phonebooksync/contacts?format=snom` |
+| **Cisco** | `https://your-pbx/pbxcore/api/phonebooksync/contacts?format=cisco` |
+| **Grandstream** | `https://your-pbx/pbxcore/api/phonebooksync/contacts?format=grandstream` |
+| **JSON** | `https://your-pbx/pbxcore/api/phonebooksync/contacts` |
 
-> De URL's zijn publiek toegankelijk zonder authenticatie — noodzakelijk zodat IP-telefoons het telefoonboek kunnen ophalen.
+> The URLs are publicly accessible without authentication — required so IP phones can retrieve the phonebook.
 
 ---
 
-## Toestel configuratie
+## Phone configuration
 
 ### Yealink
 **Directory → Remote Phone Book → Server URL**
@@ -86,51 +86,70 @@ Configureer de onderstaande URL op je toestellen als remote phonebook:
 
 ---
 
-## Hoe werkt het?
+## How it works
 
 ```
-IP-telefoon
+IP phone
     │
     │ GET /pbxcore/api/phonebooksync/contacts?format=yealink
     ▼
 MikoPBX (Cloud Phonebook module)
     │
-    ├── PBX Extensions tabel  →  interne toestellen (201, 202, ...)
-    └── ModulePhoneBook DB    →  externe nummers (+31502050400, ...)
+    ├── PBX Extensions table  →  internal extensions (201, 202, ...)
+    └── ModulePhoneBook DB    →  external numbers (+31502050400, ...)
     │
     ▼
-XML response (YealinkIPPhoneDirectory formaat)
+XML response (YealinkIPPhoneDirectory format)
 ```
 
-De module leest bij elk verzoek live de gegevens uit beide bronnen. Nummers worden genormaliseerd — streepjes en spaties worden gestript zodat het toestel correct kan bellen.
+The module reads live data from both sources on every request. Numbers are normalised — dashes and spaces are stripped so the phone can dial correctly.
 
 ---
 
-## Bekende beperkingen
+## Known limitations
 
-- Na elke herinstallatie moet de view symlink handmatig gecorrigeerd worden (zie installatie)
-- De module beheerpagina toont alleen de URL's — contacten beheer loopt via ModulePhoneBook
+- After every reinstall the view symlink must be manually corrected (see installation)
+- The module settings page only shows the URLs — contact management is done via ModulePhoneBook
 
 ---
 
 ## Changelog
 
-| Versie | Wijzigingen |
-|--------|-------------|
-| 1.4.3 | Stabiele minimale beheer UI |
+| Version | Changes |
+|---------|---------|
+| 1.4.3 | Stable minimal admin UI |
 | 1.4.2 | CRUD API via moduleRestAPICallback |
-| 1.3.1 | Controller hernoemd naar MikoPBX conventie |
-| 1.3.0 | BaseController, correcte view paden |
-| 1.2.9 | Separate XML formaten per merk |
-| 1.2.8 | Nummernormalisatie (streepjes/spaties) |
-| 1.2.7 | ModulePhoneBook contacten meelezen |
-| 1.2.2 | Conf klasse hernoemd naar PhoneBookSyncConf |
-| 1.2.0 | Publieke REST endpoint werkend |
-| 1.0.0 | Eerste versie |
+| 1.3.1 | Controller renamed to MikoPBX convention |
+| 1.3.0 | BaseController inheritance, correct view paths |
+| 1.2.9 | Separate XML formats per brand |
+| 1.2.8 | Number normalisation (strip dashes/spaces) |
+| 1.2.7 | Read ModulePhoneBook contacts |
+| 1.2.2 | Conf class renamed to PhoneBookSyncConf |
+| 1.2.0 | Public REST endpoint working |
+| 1.0.0 | Initial release |
 
 ---
 
-## Licentie
+## Nederlands
+
+### Wat doet deze module?
+
+Cloud Phonebook biedt één publieke URL waarmee IP-telefoons een actueel telefoonboek kunnen ophalen. De module combineert automatisch interne toestellen (direct uit de PBX) en externe contacten uit de ingebouwde ModulePhoneBook.
+
+### Installatie
+
+1. Download de laatste ZIP via de [Releases pagina](../../releases/latest)
+2. Ga naar **Modules → Module Management → Upload new module**
+3. Upload de ZIP en activeer de module
+4. Voer na installatie de SSH symlink fix uit (zie boven)
+
+### Contacten beheren
+
+Via de ingebouwde **ModulePhoneBook** module — alle contacten daar worden automatisch meegenomen in de Cloud Phonebook URL's.
+
+---
+
+## License
 
 [GNU General Public License v3.0](LICENSE)
 
