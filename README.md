@@ -30,14 +30,7 @@ No manual synchronisation, no dependency on Autoprovision — the URL always ret
 1. Download the latest ZIP from the [Releases page](../../releases/latest)
 2. In MikoPBX go to **Modules → Module Management → Upload new module**
 3. Upload the ZIP and activate the module
-4. Run the following commands via SSH after installation:
-
-```bash
-# Fix view symlink (required after every install)
-rm -f /offload/rootfs/usr/www/src/AdminCabinet/Views/Modules/ModulePhoneBookSync
-ln -sf /storage/usbdisk1/mikopbx/custom_modules/ModulePhoneBookSync/App/Views/ModulePhoneBookSync \
-    /offload/rootfs/usr/www/src/AdminCabinet/Views/Modules/ModulePhoneBookSync
-```
+4. The module is now ready to use.
 
 ---
 
@@ -108,7 +101,6 @@ The module reads live data from both sources on every request. Numbers are norma
 
 ## Known limitations
 
-- After every reinstall the view symlink must be manually corrected (see installation)
 - The module settings page only shows the URLs — contact management is done via ModulePhoneBook
 
 ---
@@ -141,7 +133,7 @@ Cloud Phonebook biedt één publieke URL waarmee IP-telefoons een actueel telefo
 1. Download de laatste ZIP via de [Releases pagina](../../releases/latest)
 2. Ga naar **Modules → Module Management → Upload new module**
 3. Upload de ZIP en activeer de module
-4. Voer na installatie de SSH symlink fix uit (zie boven)
+4. De module is klaar voor gebruik.
 
 ### Contacten beheren
 
