@@ -1,10 +1,12 @@
 <?php
 /**
- * Cloud Phonebook — PhoneBookSyncConf v1.4.2
+ * Cloud Phonebook — PhoneBookSyncConf v1.4.4
+ * Herstelt view symlink automatisch na PBX herstart via onAfterPbxStarted hook
  */
 namespace Modules\ModulePhoneBookSync\Lib;
 
 use MikoPBX\Modules\Config\ConfigClass;
+use MikoPBX\Modules\PbxExtensionUtils;
 use MikoPBX\Common\Models\PbxSettings;
 use MikoPBX\PBXCoreREST\Lib\PBXApiResult;
 use Modules\ModulePhoneBookSync\Lib\RestAPI\Controllers\GetController;
@@ -15,16 +17,72 @@ class PhoneBookSyncConf extends ConfigClass
     private const MODULE_PHONEBOOK_DB =
         '/storage/usbdisk1/mikopbx/custom_modules/ModulePhoneBook/db/module.db';
 
+    // ── Symlink herstel na herstart ───────────────────────────────────
+    /**
+     * Wordt aangeroepen na elke PBX herstart.
+     * /offload/rootfs/ wordt gereset bij herstart — symlink hier herstellen.
+     */
+    public function onAfterPbxStarted(): void
+    {
+        $this->fixViewSymlink();
+        PbxExtensionUtils::createAssetsSymlinks($this->moduleUniqueId);
+    }
+
+    /**
+     * Wordt aangeroepen na activeren van de module.
+     */
+    public function onAfterModuleEnable(): void
+    {
+        $this->fixViewSymlink();
+        PbxExtensionUtils::createAssetsSymlinks($this->moduleUniqueId);
+    }
+
+    /**
+     * Maakt de view symlink correct aan.
+     * MikoPBX createViewSymlinks() wijst naar App/Views/ maar wij hebben
+     * App/Views/ModulePhoneBookSync/ nodig als symlink doel.
+     */
+    private function fixViewSymlink(): void
+    {
+        $moduleDir  = PbxExtensionUtils::getModuleDir($this->moduleUniqueId);
+        $viewSrc    = $moduleDir . '/App/Views/ModulePhoneBookSync';
+        $viewTarget = '/offload/rootfs/usr/www/src/AdminCabinet/Views/Modules/' . $this->moduleUniqueId;
+        $parentDir  = dirname($viewTarget);
+
+        // Al correct?
+        if (is_link($viewTarget) && readlink($viewTarget) === $viewSrc) {
+            return;
+        }
+
+        // Verwijder verkeerde symlink/map
+        if (is_link($viewTarget)) {
+            unlink($viewTarget);
+        } elseif (is_dir($viewTarget)) {
+            // Laat map staan — niet verwijderen
+            return;
+        }
+
+        // Maak parent aan indien nodig
+        if (!is_dir($parentDir)) {
+            mkdir($parentDir, 0755, true);
+        }
+
+        // Maak correcte symlink
+        if (is_dir($viewSrc)) {
+            symlink($viewSrc, $viewTarget);
+        }
+    }
+
     // ── Publieke REST routes ──────────────────────────────────────────
     public function getPBXCoreRESTAdditionalRoutes(): array
     {
         return [
-            [GetController::class, 'getContacts', '/pbxcore/api/phonebooksync/contacts',     'get', '/', true],
-            [GetController::class, 'getContacts', '/pbxcore/api/phonebooksync/contacts.xml',  'get', '/', true],
+            [GetController::class, 'getContacts', '/pbxcore/api/phonebooksync/contacts',    'get', '/', true],
+            [GetController::class, 'getContacts', '/pbxcore/api/phonebooksync/contacts.xml', 'get', '/', true],
         ];
     }
 
-    // ── Legacy API callback (authenticated UI calls) ──────────────────
+    // ── Legacy API callback ───────────────────────────────────────────
     public function moduleRestAPICallback(array $request): PBXApiResult
     {
         $res = new PBXApiResult();
@@ -36,9 +94,9 @@ class PhoneBookSyncConf extends ConfigClass
 
         switch ($action) {
             case 'CONTACTS':
-                $res->success        = true;
+                $res->success          = true;
                 $res->data['contacts'] = self::getAllContacts();
-                $res->data['version']  = '1.4.2';
+                $res->data['version']  = '1.4.4';
                 break;
 
             case 'SAVECONTACT':
@@ -65,8 +123,8 @@ class PhoneBookSyncConf extends ConfigClass
                     $res->success    = true;
                     $res->data['id'] = $contact->id;
                 } else {
-                    $res->success   = false;
-                    $res->messages  = $contact->getMessages();
+                    $res->success  = false;
+                    $res->messages = $contact->getMessages();
                 }
                 break;
 
@@ -96,14 +154,13 @@ class PhoneBookSyncConf extends ConfigClass
 
             case 'EXPORT-CSV':
             case 'EXPORTCSV':
-                $res->success       = true;
-                $res->data['csv']   = self::exportToCsv();
+                $res->success     = true;
+                $res->data['csv'] = self::exportToCsv();
                 break;
 
             case 'IMPORT-CSV':
             case 'IMPORTCSV':
-                $csvData = $data['csv'] ?? '';
-                $result  = self::importFromCsv($csvData);
+                $result              = self::importFromCsv($data['csv'] ?? '');
                 if ($result['imported'] > 0) self::syncToCallerID();
                 $res->success            = true;
                 $res->data['imported']   = $result['imported'];
@@ -233,7 +290,7 @@ class PhoneBookSyncConf extends ConfigClass
         $lines    = ['name,number,department,category,notes'];
         $contacts = PhoneBookSyncContact::find(['order' => 'name ASC']);
         foreach ($contacts as $c) {
-            $vals  = [$c->name, $c->number, $c->department??'', $c->category??'', $c->notes??''];
+            $vals    = [$c->name, $c->number, $c->department??'', $c->category??'', $c->notes??''];
             $lines[] = implode(',', array_map(
                 fn($v) => str_contains((string)$v, ',') ? '"' . $v . '"' : (string)$v,
                 $vals
