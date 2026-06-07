@@ -13,7 +13,7 @@ class ModulePhoneBookSyncController extends BaseController
 {
     public bool $showModuleStatusToggle = true;
 
-    private const VERSION   = '1.4.3';
+    private const VERSION   = '1.4.4';
     private const SUPPORTED = ['en', 'nl', 'de', 'fr', 'ru'];
     private const LANG_MAP  = [
         'nl'=>'nl','en'=>'en','de'=>'de','fr'=>'fr','ru'=>'ru',
