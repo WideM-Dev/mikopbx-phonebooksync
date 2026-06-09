@@ -11,7 +11,7 @@
 
 Cloud Phonebook provides a single public URL that IP phones can use to retrieve an up-to-date phonebook. The module automatically combines:
 
-1. **Internal extensions** — directly from the PBX Extensions table (201 - Olaf, 202 - Homme, etc.)
+1. **Internal extensions** — directly from the PBX Extensions table
 2. **ModulePhoneBook contacts** — from the built-in MikoPBX Phonebook module (external numbers such as clients, suppliers, etc.)
 
 No manual synchronisation, no dependency on Autoprovision — the URL always returns the current state.
